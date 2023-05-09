@@ -1,18 +1,17 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:my_app/pages/random_page.dart';
 
+// Lớp Dog đại diện cho một con chó với đường dẫn ảnh của nó.
 class Dog {
   final String imageUrl;
 
   Dog({required this.imageUrl});
 
+  // Phương thức tạo mới một đối tượng Dog từ một đối tượng Map được phân tích từ JSON.
   factory Dog.fromJson(Map<String, dynamic> json) {
     return Dog(imageUrl: json['message']);
   }
@@ -27,22 +26,33 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Danh sách các tùy chọn giống chó để người dùng có thể chọn.
   final List<String> _breedOptions = ['all'];
   List<String> _breedsList = [];
-  String _selectedBreed = 'all'; // giá trị mặc định
+
+  // Loại chó được chọn, mặc định là 'all'.
+  String _selectedBreed = 'all';
+
+  // Danh sách chứa các đối tượng Dog được tải xuống từ API.
   List<Dog> _dogs = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchDogs();
+
+    // Tải danh sách tùy chọn giống chó và danh sách giống chó.
     _fetchBreedsList();
+    _fetchDogs();
   }
 
+  // Phương thức tải danh sách chó dựa trên giống được chọn.
   Future<void> _fetchDogs() async {
     final breed = _selectedBreed == 'all'
         ? 'breeds/image'
         : 'breed/$_selectedBreed/images';
+
+    // Gọi API để lấy danh sách các đường dẫn hình ảnh của chó và tạo ra danh sách các đối tượng Dog từ đó.
     final response =
         await http.get(Uri.parse('https://dog.ceo/api/$breed/random/20'));
     final data = jsonDecode(response.body);
@@ -53,23 +63,32 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Phương thức tải danh sách tùy chọn giống chó.
   Future<void> _fetchBreedsList() async {
     final response =
         await http.get(Uri.parse('https://dog.ceo/api/breeds/list'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+
+      // Tạo ra danh sách các giống chó từ dữ liệu trả về và thêm giá trị 'all' vào danh sách tùy chọn.
       final breedsList = List<String>.from(data['message']);
       setState(() {
+// Gán danh sách giống chó mới cho danh sách giống chó đã lấy được
         _breedsList = breedsList;
+// Xóa tất cả các tùy chọn giống chó cũ
         _breedOptions.clear();
+// Thêm tùy chọn "all" vào danh sách tùy chọn
         _breedOptions.add('all');
+// Thêm danh sách giống chó mới vào danh sách tùy chọn
         _breedOptions.addAll(breedsList);
       });
+// Nếu không lấy được danh sách giống chó, thông báo lỗi
     } else {
       throw Exception('Failed to load breeds list');
     }
   }
 
+// Mở thanh điều hướng
   void _openDrawer() {
     _scaffoldKey.currentState?.openDrawer();
   }
@@ -77,13 +96,15 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // Thêm key vào Scaffold
+      key: _scaffoldKey,
       appBar: AppBar(
         title: const Text('Dogs'),
+        // Thêm nút mở thanh điều hướng
         leading: IconButton(
           icon: const Icon(Icons.menu),
           onPressed: _openDrawer,
         ),
+        // Thêm danh sách thả xuống để lựa chọn giống chó
         actions: [
           DropdownButton(
             value: _selectedBreed,
@@ -91,7 +112,7 @@ class _HomePageState extends State<HomePage> {
               setState(() {
                 _selectedBreed = value as String;
               });
-              _fetchDogs(); // Gọi lại hàm _fetchDogs()
+              _fetchDogs();
             },
             items: _breedOptions.map((breed) {
               return DropdownMenuItem(
@@ -100,6 +121,7 @@ class _HomePageState extends State<HomePage> {
               );
             }).toList(),
           ),
+          // Thêm nút để chuyển đến trang ngẫu nhiên
           TextButton(
             onPressed: () {
               Navigator.push(
@@ -118,6 +140,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+      // Thanh điều hướng
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -143,6 +166,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+      // Hiển thị danh sách chó
       body: _dogs == null
           ? const Center(child: CircularProgressIndicator())
           : GridView.builder(

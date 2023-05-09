@@ -15,15 +15,18 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Hàm xử lý đăng ký
   Future<void> _register() async {
     try {
+      // Tạo tài khoản người dùng sử dụng email và mật khẩu
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
       if (userCredential.user != null) {
-        // Registration successful, show success dialog
+        // Hiển thị hộp thoại thành công và điều hướng đến trang đăng nhập
+        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (context) {
@@ -33,11 +36,11 @@ class _RegisterPageState extends State<RegisterPage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context); // close dialog
+                    Navigator.pop(context); // Đóng hộp thoại
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => LoginPage()),
-                    ); // navigate to login page
+                    ); // Điều hướng đến trang đăng nhập
                   },
                   child: Text('OK'),
                 ),
@@ -47,6 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
         );
       }
     } on FirebaseAuthException catch (e) {
+      // Hiển thị hộp thoại lỗi nếu có lỗi xảy ra
       if (e.code == 'weak-password') {
         showDialog(
           context: context,
@@ -95,6 +99,7 @@ class _RegisterPageState extends State<RegisterPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
+      // Phần giao diện đăng ký tài khoản người dùng
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -105,6 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Thêm hình logo
                   SizedBox(
                     height: 50.0,
                     child: Image.asset('assets/logo.png'),
@@ -112,6 +118,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ],
               ),
               SizedBox(height: 16.0),
+              // Tiêu đề trang
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -122,6 +129,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ],
               ),
               SizedBox(height: 16.0),
+              // Ô nhập thông tin tên người dùng
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -139,6 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
               ),
               SizedBox(height: 16.0),
+              // Ô nhập thông tin email người dùng
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -158,6 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
               ),
               SizedBox(height: 16.0),
+              // Ô nhập thông tin mật khẩu
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
@@ -178,6 +188,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
               ),
               SizedBox(height: 16.0),
+              // Nút đăng ký tài khoản
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
@@ -187,6 +198,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Text("Đăng ký"),
               ),
               SizedBox(height: 20),
+              // Chuyển sang trang đăng nhập nếu đã có tài khoản
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
