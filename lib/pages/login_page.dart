@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_app/pages/home_page.dart';
 import 'package:my_app/pages/register.dart';
+import 'dart:async';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -9,6 +11,17 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +38,37 @@ class _LoginPageState extends State<LoginPage> {
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 50.0,
+                    child: Image.asset('assets/logo.png'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Dog API',
+                    style: TextStyle(fontSize: 32.0),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.0),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Email'),
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent),
+                  ),
+                ),
                 validator: (value) {
                   if (value!.trim().isEmpty) {
                     return 'Vui lòng nhập email';
@@ -36,9 +76,17 @@ class _LoginPageState extends State<LoginPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 16.0),
               TextFormField(
+                controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(labelText: 'Mật khẩu'),
+                decoration: InputDecoration(
+                  labelText: 'Mật khẩu',
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent),
+                  ),
+                ),
                 validator: (value) {
                   if (value!.trim().isEmpty) {
                     return 'Vui lòng nhập mật khẩu';
@@ -48,25 +96,44 @@ class _LoginPageState extends State<LoginPage> {
               ),
               SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // TODO: Thực hiện đăng nhập
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                    );
+                    try {
+                      final userCredential =
+                          await _auth.signInWithEmailAndPassword(
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomePage()),
+                      );
+                    } on FirebaseAuthException catch (e) {
+                      if (e.code == 'user-not-found') {
+                        setState(() {
+                          _errorMessage =
+                              'Không tìm thấy người dùng với email này';
+                        });
+                      } else if (e.code == 'wrong-password') {
+                        setState(() {
+                          _errorMessage = 'Mật khẩu không chính xác';
+                        });
+                      }
+                    } catch (e) {
+                      print(e);
+                    }
                   }
                 },
                 child: Text('Đăng nhập'),
               ),
-              SizedBox(height: 16.0),
+              SizedBox(height: 8.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Bạn chưa có tài khoản?"),
+                  Text("Đã chưa tài khoản?"),
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => RegisterPage()),
                       );
@@ -75,6 +142,14 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
             ],
           ),
         ),

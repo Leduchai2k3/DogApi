@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -29,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   final List<String> _breedOptions = ['all'];
   List<String> _breedsList = [];
   String _selectedBreed = 'all'; // giá trị mặc định
-  late List<Dog> _dogs;
+  List<Dog> _dogs = [];
 
   @override
   void initState() {
