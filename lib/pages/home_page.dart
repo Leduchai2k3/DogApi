@@ -163,6 +163,12 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pushNamed(context, '/register');
               },
             ),
+            ListTile(
+              title: Text('Đổi mật khẩu'),
+              onTap: () {
+                Navigator.pushNamed(context, '/changepassword');
+              },
+            ),
           ],
         ),
       ),
